@@ -3,7 +3,9 @@
 
 import json
 import jsonschema
-from pkg_resources import resource_stream
+# from pkg_resources import resource_stream
+from importlib.resources import files
+
 
 from .serializer import get_serializer
 
@@ -54,11 +56,10 @@ class Message(dict):
 
     def validate(self) -> None:
         schema_file = self._VERSIONS.get(self.get('Version'), self._VERSIONS[None])
-        stream = resource_stream('idmefv2.schemas', schema_file)
-        try:
+        schema_path = files("idmefv2.schemas").joinpath(schema_file)
+    
+        with schema_path.open("r", encoding="utf-8") as stream:
             jsonschema.validate(self, json.load(stream))
-        finally:
-            stream.close()
 
     def serialize(self, content_type: str) -> SerializedMessage:
         serializer = get_serializer(content_type)

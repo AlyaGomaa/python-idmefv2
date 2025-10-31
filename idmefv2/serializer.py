@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import abc
-import pkg_resources
+from importlib.metadata import entry_points
 import warnings
 
 from collections.abc import Callable
@@ -53,11 +53,11 @@ def get_serializer(content_type: str) -> 'Serializer':
 
     if _serializers is None:
         _serializers = {}
-        for entry_point in pkg_resources.iter_entry_points('idmefv2.serializer'):
+        for ep in entry_points(group='idmefv2.serializer'):
             try:
-                cls = entry_point.load()
+                cls = ep.load()
                 if issubclass(cls, Serializer):
-                    _serializers[entry_point.name] = cls
+                    _serializers[ep.name] = cls
             except Exception as e:
                 warnings.warn(str(e), ResourceWarning)
 
